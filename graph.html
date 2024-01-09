@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Visualization</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script type="text/javascript" src="parse.js"></script>
+    <script type="text/javascript" src="chord.js"></script>
+    <script type="text/javascript" src="sugiyama.js"></script>
+    <script type="text/javascript" src="reingold.js"></script>
+    <script type="text/javascript" src="grid.js"></script>
+
+    <style>
+        body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+    background-color: #0056b3;
+    color: white;
+    padding: 20px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.header h1 {
+    margin: 0;
+}
+
+.graph-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.graph {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+
+.graph:hover {
+    transform: translateY(-10px);
+}
+
+.graph h2 {
+    color: #0056b3;
+    font-weight: 500;
+    margin-top: 0;
+}
+
+.graph-content {
+    height: 300px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+.graph-content {
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #555; 
+}
+
+
+.graph-content a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.graph-content a:hover {
+    text-decoration: underline;
+}
+
+
+.button {
+    background-color: #0056b3;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #003d7a;
+}
+
+
+.footer {
+    text-align: center;
+    padding: 20px 0;
+    background-color: #0056b3;
+    color: white;
+    margin-top: 40px;
+}
+
+.footer p {
+    margin: 0;
+}
+
+/* Responsive Design k liyw */
+@media (max-width: 768px) {
+    .header, .footer {
+        padding: 10px 0;
+    }
+
+    .graph {
+        padding: 15px;
+    }
+
+    .graph-content {
+        font-size: 14px;
+    }
+}
+
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.graph-content {
+    animation: fadeIn 1s;
+}
+
+    </style>
+
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Graph Visualization</h1>
+        </header>
+        <main class="graph-section">
+            <section id="graph1" class="graph">
+                <h2>Visualization 1</h2>
+                <div class="graph-content">Graph 1 will be visualized here.</div>
+            </section>
+            <section id="graph2" class="graph">
+                <h2>Visualization 2</h2>
+                <div class="graph-content">Graph 2 will be visualized here.</div>
+            </section>
+        </main>
+    </div>
+    <script type="text/javascript">
+        // Read the graph data from localStorage
+        const graphData = localStorage.getItem('graphData');
+
+        if (graphData) {
+        try {
+            const matrix = parseCSV(graphData);
+            
+            const isTreeResult = isTree(matrix);
+            const adjList = convertMatrixToAdjList(matrix);
+            const isDAGResult = isDAG(adjList);
+
+            console.log("Is the graph a tree? " + isTreeResult);
+            console.log("Is the graph a DAG? " + isDAGResult);
+
+            if (isTree(matrix)) {
+                // iccicle wala is called in parse.js
+                displayReingoldTilfordTree(matrix, 'graph2');
+            } else if (isDAG(adjList)) {
+                // Use the functions for DAG
+                const sortedNodes = topologicalSort(adjList);
+                const layers = assignLayers(adjList, sortedNodes);
+                const positions = positionNodes(layers);
+                // ye sugiyama layout
+                renderGraph(positions, adjList, 'graph1'); 
+            } else {
+                displayGridLayout(matrix, 'graph1'); 
+                displayChordLayout(matrix, 'graph2');
+            }
+
+            localStorage.removeItem('graphData');
+        } catch (error) {
+            console.error("Error visualizing the graph: ", error);
+        }
+    }
+
+    </script>
+</body>
+</html>
+          
+
+         
